@@ -1,0 +1,86 @@
+app: qwen-25-72b-instruct
+
+modelName: Qwen/Qwen2.5-72B-Instruct
+
+replicaCount: 1
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: nvidia.com/gpu.product
+          operator: In
+          values:
+          # Add one of the following options:
+          # - NVIDIA-H100-80GB-HBM3
+          # - NVIDIA-H100-80GB-HBM3-MIG-1g.10gb
+          # - NVIDIA-H100-80GB-HBM3-MIG-1g.20gb
+          # - NVIDIA-H100-80GB-HBM3-MIG-1g.40gb
+          - NVIDIA-L40S
+
+tolerations: {}
+
+image:
+  repository: dekaregistry.cloudeka.id/cloudeka-system/vllm
+  tag: v0.7.4
+  pullPolicy: Always
+
+pvc:
+  enabled: true
+  name: ""
+  storageClassName: storage-nvme-c1
+  size: 250Gi
+
+service:
+  enabled: true
+  name: ""
+  type: LoadBalancer
+  annotations:
+    metallb.universe.tf/address-pool: address-pool
+  ports:
+    - name: http-vllm
+      port: 80
+      targetPort: 8000
+      protocol: TCP
+  sessionAffinity: None
+
+resources:
+  limits:
+    cpu: "32"
+    memory: "64Gi"
+    nvidia.com/gpu: "8"
+  requests:
+    cpu: "4"
+    memory: "16Gi"
+    nvidia.com/gpu: "8"
+
+# Probe configurations for vLLM server
+probes:
+  liveness:
+    path: /health
+    port: 8000
+    initialDelaySeconds: 600
+    periodSeconds: 10
+  readiness:
+    path: /health
+    port: 8000
+    initialDelaySeconds: 600
+    periodSeconds: 5
+
+# Additional arguments passed to vllm serve
+# Example:
+# extraArgs:
+#   - "--gpu-memory-utilization"
+#   - "0.95"
+#   - "--tensor-parallel-size"
+#   - "8"
+#   - "--enforce-eager"
+extraArgs: {}
+
+# Additional environment variables (optional)
+# Example:
+# env:
+#   - name: HUGGING_FACE_HUB_TOKEN
+#     value: <HUGGING_FACE_HUB_TOKEN>
+env: {}

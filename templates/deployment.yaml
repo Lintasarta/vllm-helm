@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.app }}
+  labels:
+    app: {{ .Values.app }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.app }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.app }}
+    spec:
+      affinity: {{ toYaml .Values.affinity | nindent 8 }}
+      tolerations: {{ toYaml .Values.tolerations | nindent 8 }}
+      volumes:
+      - name: cache-volume
+        persistentVolumeClaim:
+          claimName: {{ .Values.pvc.name | default .Values.app }}
+      - name: shm
+        emptyDir:
+          medium: Memory
+          sizeLimit: "2Gi"
+      containers:
+      - name: {{ .Values.app }}
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command: ["/bin/sh", "-c"]
+        args:
+          - vllm serve {{ .Values.modelName }}
+          {{- range .Values.extraArgs }}
+          - {{ . | quote }}
+          {{- end }}
+        env:
+          - name: HF_HOME
+            value: /.cache
+          {{- if .Values.env }}
+          {{- range .Values.env }}
+          - name: {{ .name }}
+            value: {{ .value | quote }}
+          {{- end }}
+          {{- end }}
+        ports:
+        - containerPort: 8000
+        resources:
+          limits:
+            cpu: {{ .Values.resources.limits.cpu | quote }}
+            memory: {{ .Values.resources.limits.memory | quote }}
+            nvidia.com/gpu: {{ index .Values.resources.limits "nvidia.com/gpu" | quote }}
+          requests:
+            cpu: {{ .Values.resources.requests.cpu | quote }}
+            memory: {{ .Values.resources.requests.memory | quote }}
+            nvidia.com/gpu: {{ index .Values.resources.requests "nvidia.com/gpu" | quote }}
+        securityContext:
+          runAsUser: 1000
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+        volumeMounts:
+        - mountPath: /.cache
+          name: cache-volume
+        - name: shm
+          mountPath: /dev/shm
+        livenessProbe:
+        httpGet:
+            path: {{ .Values.probes.liveness.path }}
+            port: {{ .Values.probes.liveness.port }}
+        initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
+        periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
+
+        readinessProbe:
+        httpGet:
+            path: {{ .Values.probes.readiness.path }}
+            port: {{ .Values.probes.readiness.port }}
+        initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
+        periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
+      runtimeClassName: nvidia

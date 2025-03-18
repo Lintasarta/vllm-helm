@@ -1,0 +1,6 @@
+apiVersion: v2
+name: dekagpu-vllm-deployment
+description: A general-purpose Helm chart to deploy AI models (e.g., Qwen2.5-72B-Instruct) on DekaGPU with vLLM.
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

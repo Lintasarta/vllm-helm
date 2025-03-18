@@ -1,0 +1,22 @@
+{{- if .Values.service.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.service.name | default .Values.app }}
+  {{- if .Values.service.annotations }}
+  annotations:
+    {{- toYaml .Values.service.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.type | default "LoadBalancer" }}
+  ports:
+  {{- range .Values.service.ports }}
+  - name: {{ .name }}
+    port: {{ .port }}
+    protocol: {{ .protocol | default "TCP" }}
+    targetPort: {{ .targetPort }}
+  {{- end }}
+  selector:
+    app: {{ .Values.app }}
+  sessionAffinity: {{ .Values.service.sessionAffinity | default "None" }}
+{{- end }}
