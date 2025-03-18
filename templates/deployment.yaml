@@ -15,7 +15,10 @@ spec:
         app: {{ .Values.app }}
     spec:
       affinity: {{ toYaml .Values.affinity | nindent 8 }}
-      tolerations: {{ toYaml .Values.tolerations | nindent 8 }}
+      {{- if .Values.tolerations }}
+      tolerations: 
+      {{ toYaml .Values.tolerations | nindent 8 }}
+      {{- end }}
       volumes:
       - name: cache-volume
         persistentVolumeClaim:
@@ -64,16 +67,16 @@ spec:
         - name: shm
           mountPath: /dev/shm
         livenessProbe:
-        httpGet:
+          httpGet:
             path: {{ .Values.probes.liveness.path }}
             port: {{ .Values.probes.liveness.port }}
-        initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
-        periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
+          initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
 
         readinessProbe:
-        httpGet:
+          httpGet:
             path: {{ .Values.probes.readiness.path }}
             port: {{ .Values.probes.readiness.port }}
-        initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
-        periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
+          initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
       runtimeClassName: nvidia
