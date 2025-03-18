@@ -18,9 +18,7 @@ This Helm chart deploys AI models (e.g., Qwen2.5-72B-Instruct) using **vLLM** on
 ## Prerequisites
 
 - Helm 3.x
-- Kubernetes cluster with GPU-enabled nodes
-- Nvidia GPU Operator deployed (for `nvidia` runtime class)
-- DekaGPU platform
+- DekaGPU's Kubernetes cluster with GPU-enabled nodes
 
 ---
 
@@ -129,24 +127,35 @@ probes:
 💡 Tip:
 If you want to reuse existing PVC/Service, set pvc.enabled: false and service.enabled: false.
 
-### 3️⃣ Install the Helm chart
-```
+### 3️⃣ Install the chart
+```bash
 helm install <release-name> . -f values.yaml -n <namespace> --create-namespace
 ```
-
 Example:
+```bash
+helm install qwen . -f values.yaml -n sglang --create-namespace
 ```
-helm install qwen-vllm . -f values.yaml -n vllm --create-namespace
+
+
+### Updating values
+
+To upgrade with new configurations:
+```bash
+helm upgrade <release-name> . -f values.yaml -n <namespace>
 ```
 
+### Uninstalling the chart
+```bash
+helm uninstall <release-name> -n <namespace>
+```
+
+### Notes
+- The chart automatically mounts PVC and configures GPUs for AI workloads.
+- Supports MetalLB or cloud-based LoadBalancer.
+- Fully parameterized for multi-model deployments.
 
 
-Notes
-- This chart mounts shared memory (/dev/shm) as required by vLLM tensor-parallel inference.
-- Supports NVIDIA GPUs with node affinity.
-- MetalLB annotations included for bare-metal load balancers.
 
-TODO / Suggestions
+### TODO / Suggestions
 - Support Horizontal Pod Autoscaler (HPA)
-- ConfigMap/Secrets support for environment variables
-- Optional ServiceMonitor for Prometheus scraping
+- Add ConfigMap / Secrets injection (optional)
