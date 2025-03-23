@@ -33,10 +33,9 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         command: ["/bin/sh", "-c"]
         args:
-          - vllm serve {{ .Values.modelName }}
-          {{- range .Values.extraArgs }}
-          - {{ . | quote }}
-          {{- end }}
+          - >-
+            vllm serve {{ .Values.modelName }}
+            {{- range .Values.extraArgs }} {{ . }}{{- end }}
         env:
           - name: HF_HOME
             value: /.cache
