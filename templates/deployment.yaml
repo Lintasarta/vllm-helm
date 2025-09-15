@@ -71,6 +71,7 @@ spec:
             port: {{ .Values.probes.liveness.port }}
           initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
           periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
+          failureThreshold: {{ .Values.probes.liveness.failureThreshold | default 1 }}
 
         readinessProbe:
           httpGet:
@@ -78,4 +79,5 @@ spec:
             port: {{ .Values.probes.readiness.port }}
           initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
           periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
+          failureThreshold: {{ .Values.probes.readiness.failureThreshold | default 1 }}
       runtimeClassName: nvidia
