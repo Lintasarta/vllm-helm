@@ -31,11 +31,11 @@ spec:
       - name: {{ .Values.app }}
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        command: ["/bin/sh", "-c"]
         args:
-          - >-
-            vllm serve {{ .Values.modelName }}
-            {{- range .Values.extraArgs }} {{ . }}{{- end }}
+          - "{{ .Values.modelName }}"
+          {{- range .Values.extraArgs }}
+          - "{{ . }}"
+          {{- end }}
         env:
           - name: HF_HOME
             value: /.cache

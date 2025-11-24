@@ -1,6 +1,6 @@
-app: gemma-3-27b-it
+app: qwen3-0-6b
 
-modelName: google/gemma-3-27b-it
+modelName: Qwen/Qwen3-0.6B
 replicaCount: 1
 
 affinity:
@@ -22,7 +22,7 @@ tolerations: {}
 
 image:
   repository: dekaregistry.cloudeka.id/cloudeka-system/vllm-openai
-  tag: v0.10.2
+  tag: v0.11.2
   pullPolicy: Always
 
 pvc:
@@ -48,11 +48,11 @@ resources:
   limits:
     cpu: "16"
     memory: "32Gi"
-    nvidia.com/gpu: "4"
+    nvidia.com/gpu: "1"
   requests:
     cpu: "8"
     memory: "8Gi"
-    nvidia.com/gpu: "4"
+    nvidia.com/gpu: "1"
 
 # Probe configurations for vLLM server
 probes:
@@ -81,9 +81,9 @@ extraArgs:
   - "--gpu-memory-utilization"
   - "0.9"
   - "--tensor-parallel-size"
-  - "4"
-  - "--max-num-batched-tokens"
-  - "65536"
+  - "1"
+  # - "--max-num-batched-tokens"
+  # - "65536"
   # - "--data-parallel-size"
   # - "8"
   # - "--served-model-name"
