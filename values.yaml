@@ -1,7 +1,6 @@
-app: qwen-25-72b-instruct
+app: gemma-3-27b-it
 
-modelName: Qwen/Qwen2.5-72B-Instruct
-
+modelName: google/gemma-3-27b-it
 replicaCount: 1
 
 affinity:
@@ -22,8 +21,8 @@ affinity:
 tolerations: {}
 
 image:
-  repository: dekaregistry.cloudeka.id/cloudeka-system/vllm
-  tag: v0.7.3
+  repository: dekaregistry.cloudeka.id/cloudeka-system/vllm-openai
+  tag: v0.10.2
   pullPolicy: Always
 
 pvc:
@@ -33,7 +32,7 @@ pvc:
   size: 250Gi
 
 service:
-  enabled: true
+  enabled: yes
   name: ""
   type: LoadBalancer
   annotations:
@@ -47,26 +46,28 @@ service:
 
 resources:
   limits:
-    cpu: "32"
-    memory: "64Gi"
-    nvidia.com/gpu: "8"
+    cpu: "16"
+    memory: "32Gi"
+    nvidia.com/gpu: "4"
   requests:
-    cpu: "4"
-    memory: "16Gi"
-    nvidia.com/gpu: "8"
+    cpu: "8"
+    memory: "8Gi"
+    nvidia.com/gpu: "4"
 
 # Probe configurations for vLLM server
 probes:
   liveness:
     path: /health
     port: 8000
-    initialDelaySeconds: 600
-    periodSeconds: 10
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    failureThreshold: 40
   readiness:
     path: /health
     port: 8000
-    initialDelaySeconds: 600
-    periodSeconds: 5
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    failureThreshold: 40
 
 # Additional arguments passed to vllm serve
 # Example:
@@ -76,7 +77,29 @@ probes:
 #   - "--tensor-parallel-size"
 #   - "8"
 #   - "--enforce-eager"
-extraArgs: {}
+extraArgs:
+  - "--gpu-memory-utilization"
+  - "0.9"
+  - "--tensor-parallel-size"
+  - "4"
+  - "--max-num-batched-tokens"
+  - "65536"
+  # - "--data-parallel-size"
+  # - "8"
+  # - "--served-model-name"
+  # - "qwen/qwen-25-72b-instruct"
+  # - "--max-model-len"
+  # - "131072"
+  # - "--api-key"
+  # - ""
+  - "--enable-auto-tool-choice"
+  - "--tool-call-parser"
+  - "hermes"
+  # - "--chat-template"
+  # - "examples/tool_chat_template_llama4_pythonic.jinja"
+  # - "--trust-remote-code"
+  # - "--enforce-eager"
+  # - "--enable-expert-parallel"
 
 # Additional environment variables (optional)
 # Example:
